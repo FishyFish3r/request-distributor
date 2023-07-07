@@ -1,4 +1,7 @@
 # request-distributor
+
+100 get reqs/1sec
+
 //docker start
 
 cd path/request-distributor
