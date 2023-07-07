@@ -18,8 +18,10 @@ func sendReq(addr string) {
 }
 
 func main() {
+	log.Print("Spamer started")
+
 	for {
-		go sendReq("http://localhost:61337/")
+		go sendReq("http://request-distributor-dist-1:61337/")
 
 		time.Sleep(100 * time.Millisecond)
 	}

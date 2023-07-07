@@ -1,42 +1,42 @@
 package main
 
 import (
-	"flag"
-	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
-	"path/filepath"
+	"os"
 	"strconv"
 	"time"
 
 	"github.com/gofiber/fiber"
 )
 
-func writeAddrToCfg(port int) {
-	cfgPath := filepath.Join("..", "distributor", "servers.cfg")
+/*func writeAddrToCfg(port int) {
+	cfgPath := "../distributor/servers.cfg"
 
 	data := []byte(fmt.Sprintf("http://localhost:%v\n", port))
 
-	old, _ := ioutil.ReadFile(cfgPath)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
 
 	result := append(old, data...)
 
 	ioutil.WriteFile(cfgPath, result, 0644)
-}
+}*/
 
 func main() {
-	var port int
+	/*var port int
 
 	flag.IntVar(&port, "port", 0, "port of service instance")
 	flag.Parse()
 
-	writeAddrToCfg(port)
+	//writeAddrToCfg(port)
 
 	if port == 0 {
 		log.Fatal("-port is null")
 		return
-	}
+	}*/
 
 	currReqsInProcess := 0
 
@@ -48,8 +48,7 @@ func main() {
 		defer func() {
 			currReqsInProcess--
 		}()
-
-		time.Sleep(5 * time.Second)
+		time.Sleep(3 * time.Second)
 
 		c.SendStatus(http.StatusOK)
 	})
@@ -58,5 +57,5 @@ func main() {
 		c.SendString(strconv.Itoa(currReqsInProcess))
 	})
 
-	log.Fatal(s.Listen(port))
+	log.Fatal(s.Listen(os.Getenv("PORT")))
 }

@@ -1,0 +1,60 @@
+version: '3'
+
+services:
+  dist:
+    build: 
+      context: ./distributor
+    ports:
+      - 61337:61337
+  serv1:
+    build: 
+      context: ./dumpservice
+    ports:
+      - 60001:60001
+    volumes:
+      - ./distributor:/distributor  
+    environment:
+      - PORT=60001
+  serv2:
+    build: 
+      context: ./dumpservice
+    ports:
+      - 60002:60002
+    volumes:
+      - ./distributor:/distributor  
+    environment:
+      - PORT=60002
+  serv3:
+    build: 
+      context: ./dumpservice
+    ports:
+      - 60003:60003
+    volumes:
+      - ./distributor:/distributor  
+    environment:
+      - PORT=60003
+  serv4:
+    build: 
+      context: ./dumpservice
+    ports:
+      - 60004:60004
+    volumes:
+      - ./distributor:/distributor  
+    environment:
+      - PORT=60004
+  serv5:
+    build: 
+      context: ./dumpservice
+    ports:
+      - 60005:60005
+    volumes:
+      - ./distributor:/distributor  
+    environment:
+      - PORT=60005
+  spamer:
+    build: 
+      context: ./spamer
+    ports:
+      - 60006:60000
+
+    

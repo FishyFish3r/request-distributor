@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/gofiber/fiber"
+	"github.com/gofiber/fiber/v2"
 )
 
 func getServerLoad(addr string) int {
@@ -56,14 +56,13 @@ func getAddrsFromFile(filename string) []string {
 
 func getBestServer(servs []string) int {
 	bestLoad := math.MaxInt64
-	bestServer := 0
+	bestServer := -1
 
 	for id, addr := range servs {
 		load := getServerLoad(addr)
 
 		if load >= 0 {
 			if load < bestLoad {
-				log.Printf("Server %v load: %v", addr, load)
 				bestLoad = load
 				bestServer = id
 			}
@@ -71,6 +70,21 @@ func getBestServer(servs []string) int {
 	}
 
 	return bestServer
+}
+
+func serverLive(addr string) bool {
+	return getServerLoad(addr) >= 0
+}
+
+func sortServers(l []string) []string {
+	servs := make([]string, 0)
+	for _, addr := range l {
+		if serverLive(addr) {
+			servs = append(servs, addr)
+		}
+	}
+
+	return servs
 }
 
 func sendToServer(addr string) error {
@@ -89,17 +103,20 @@ func sendToServer(addr string) error {
 	return nil
 }
 
-func deleteServerFromList(servs *[]string, id int) {
-	if id < len(*servs) && id >= 0 {
-		*servs = append((*servs)[:id], (*servs)[id+1:]...)
-	}
-}
-
 func main() {
 	s := fiber.New()
+	d, err := ioutil.ReadFile("servers.cfg")
 
-	s.Get("/", func(c *fiber.Ctx) {
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Print(string(d))
+
+	s.Get("/", func(c *fiber.Ctx) error {
 		servs := getAddrsFromFile("servsers.cfg")
+
+		servs = sortServers(servs)
 
 		if len(servs) > 0 {
 			serverId := getBestServer(servs)
@@ -108,12 +125,18 @@ func main() {
 				err := sendToServer(servs[serverId])
 				if err != nil {
 					log.Printf("Server closed: %v", servs[serverId])
+					return c.SendStatus(http.StatusInternalServerError)
 				} else {
-					c.SendStatus(http.StatusOK)
+					log.Printf("Server %v ok load: %v", servs[serverId], getServerLoad(servs[serverId]))
+					return c.SendStatus(http.StatusOK)
 				}
 			}
+		} else {
+			log.Print("Servers down")
 		}
+
+		return nil
 	})
 
-	log.Fatal(s.Listen(61337))
+	log.Fatal(s.Listen(":61337"))
 }
