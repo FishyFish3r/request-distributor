@@ -6,10 +6,12 @@ import (
 	"log"
 	"math"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/sirupsen/logrus"
 )
 
 func getServerLoad(addr string) int {
@@ -105,13 +107,20 @@ func sendToServer(addr string) error {
 
 func main() {
 	s := fiber.New()
-	d, err := ioutil.ReadFile("servers.cfg")
+
+	logfile, err := os.OpenFile("logs.txt", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Print(err)
+		return
 	}
 
-	log.Print(string(d))
+	defer logfile.Close()
+
+	logrus.SetOutput(logfile)
+	logrus.SetFormatter(&logrus.TextFormatter{
+		FullTimestamp: true,
+	})
 
 	s.Get("/", func(c *fiber.Ctx) error {
 		servs := getAddrsFromFile("servsers.cfg")
@@ -125,14 +134,17 @@ func main() {
 				err := sendToServer(servs[serverId])
 				if err != nil {
 					log.Printf("Server closed: %v", servs[serverId])
+					logrus.Info(fmt.Sprintf("Server closed: %v", servs[serverId]))
 					return c.SendStatus(http.StatusInternalServerError)
 				} else {
 					log.Printf("Server %v ok load: %v", servs[serverId], getServerLoad(servs[serverId]))
+					logrus.Info(fmt.Sprintf("Server %v ok load: %v", servs[serverId], getServerLoad(servs[serverId])))
 					return c.SendStatus(http.StatusOK)
 				}
 			}
 		} else {
 			log.Print("Servers down")
+			logrus.Info("Servers down")
 		}
 
 		return nil

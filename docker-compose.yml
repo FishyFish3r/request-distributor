@@ -55,6 +55,6 @@ services:
     build: 
       context: ./spamer
     ports:
-      - 60006:60000
+      - 61000:60000
 
     

@@ -23,6 +23,6 @@ func main() {
 	for {
 		go sendReq("http://request-distributor-dist-1:61337/")
 
-		time.Sleep(100 * time.Millisecond)
+		time.Sleep(10 * time.Millisecond)
 	}
 }
