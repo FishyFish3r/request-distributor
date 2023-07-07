@@ -8,6 +8,7 @@ docker-compose up
 //docker test servsers
 
 docker-compose stop servX(example serv1) 
+
 docker-compose start servX(example serv1) 
 
 //to view logs
